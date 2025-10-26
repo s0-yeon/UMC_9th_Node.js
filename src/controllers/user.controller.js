@@ -1,11 +1,19 @@
-import { StatusCodes } from "http-status-codes";
-import { bodyToUser } from "../dtos/user.dto.js";
 import { userSignUp } from "../services/user.service.js";
 
-export const handleUserSignUp = async (req, res, next) => {
-  console.log("회원가입을 요청했습니다!");
-  console.log("body:", req.body); // 값이 잘 들어오나 확인하기 위한 테스트용
+// 회원가입 컨트롤러
+export const handleUserSignUp = async (req, res) => {
+  console.log("📨 회원가입 요청이 들어왔습니다!");
+  console.log("🔥 req.headers.content-type:", req.headers["content-type"]);
+  console.log("🔥 req.body:", req.body);
 
-  const user = await userSignUp(bodyToUser(req.body));
-  res.status(StatusCodes.OK).json({ result: user });
+  try {
+    const result = await userSignUp(req.body);
+    res.status(201).json({
+      message: "✅ 회원가입이 완료되었습니다.",
+      user: result,
+    });
+  } catch (err) {
+    console.error("❌ handleUserSignUp Error:", err);
+    res.status(400).json({ message: err.message });
+  }
 };

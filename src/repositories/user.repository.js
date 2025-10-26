@@ -1,29 +1,30 @@
 import { pool } from "../db.config.js";
 
-// User 데이터 삽입
+// ✅ 유저 데이터 삽입
 export const addUser = async (data) => {
   const conn = await pool.getConnection();
 
   try {
-    const [confirm] = await pool.query(
+    const [confirm] = await conn.query(
       `SELECT EXISTS(SELECT 1 FROM user WHERE email = ?) as isExistEmail;`,
-      data.email
+      [data.email]
     );
 
     if (confirm[0].isExistEmail) {
       return null;
     }
 
-    const [result] = await pool.query(
-      `INSERT INTO user (email, name, gender, birth, address, detail_address, phone_number) VALUES (?, ?, ?, ?, ?, ?, ?);`,
+    const [result] = await conn.query(
+      `INSERT INTO user (email, name, gender, birth, address, phone_num, password)
+       VALUES (?, ?, ?, ?, ?, ?, ?);`,
       [
         data.email,
         data.name,
         data.gender,
         data.birth,
         data.address,
-        data.detailAddress,
         data.phoneNumber,
+        data.password,
       ]
     );
 
@@ -37,20 +38,20 @@ export const addUser = async (data) => {
   }
 };
 
-// 사용자 정보 얻기
+// ✅ 사용자 정보 조회
 export const getUser = async (userId) => {
   const conn = await pool.getConnection();
 
   try {
-    const [user] = await pool.query(`SELECT * FROM user WHERE id = ?;`, userId);
+    const [user] = await conn.query(`SELECT * FROM user WHERE user_id = ?;`, [
+      userId,
+    ]);
 
-    console.log(user);
-
-    if (user.length == 0) {
+    if (user.length === 0) {
       return null;
     }
 
-    return user;
+    return user[0];
   } catch (err) {
     throw new Error(
       `오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err})`
@@ -60,17 +61,15 @@ export const getUser = async (userId) => {
   }
 };
 
-// 음식 선호 카테고리 매핑
+// ✅ 사용자 선호 카테고리 삽입
 export const setPreference = async (userId, foodCategoryId) => {
   const conn = await pool.getConnection();
 
   try {
-    await pool.query(
+    await conn.query(
       `INSERT INTO user_favor_category (food_category_id, user_id) VALUES (?, ?);`,
       [foodCategoryId, userId]
     );
-
-    return;
   } catch (err) {
     throw new Error(
       `오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err})`
@@ -80,16 +79,18 @@ export const setPreference = async (userId, foodCategoryId) => {
   }
 };
 
-// 사용자 선호 카테고리 반환
+// ✅ 사용자 선호 카테고리 조회
 export const getUserPreferencesByUserId = async (userId) => {
   const conn = await pool.getConnection();
 
   try {
-    const [preferences] = await pool.query(
-      "SELECT ufc.id, ufc.food_category_id, ufc.user_id, fcl.name " +
-        "FROM user_favor_category ufc JOIN food_category fcl on ufc.food_category_id = fcl.id " +
-        "WHERE ufc.user_id = ? ORDER BY ufc.food_category_id ASC;",
-      userId
+    const [preferences] = await conn.query(
+      `SELECT ufc.id, ufc.food_category_id, ufc.user_id, fcl.name
+       FROM user_favor_category ufc
+       JOIN food_category fcl ON ufc.food_category_id = fcl.id
+       WHERE ufc.user_id = ?
+       ORDER BY ufc.food_category_id ASC;`,
+      [userId]
     );
 
     return preferences;
