@@ -15,3 +15,12 @@ export const responseFromStore = (store) => ({
   total_star: store.total_star,
   created_at: store.created_at,
 });
+
+export const responseFromReviews = (reviews) => {
+  return {
+    data: reviews,
+    pagination: {
+      cursor: reviews.length ? reviews[reviews.length - 1].id : null,
+    },
+  };
+};

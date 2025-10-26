@@ -1,5 +1,7 @@
 import { addStoreInDB } from "../repositories/store.repository.js";
 import { pool } from "../db.config.js";
+import { getAllStoreReviews } from "../repositories/review.repository.js";
+
 
 export const addStore = async (storeData) => {
   const connection = await pool.getConnection();
@@ -23,4 +25,9 @@ export const addStore = async (storeData) => {
   } finally {
     connection.release();
   }
+};
+
+export const listStoreReviews = async (storeId) => {
+  const reviews = await getAllStoreReviews(storeId);
+  return responseFromReviews(reviews);
 };

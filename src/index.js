@@ -2,6 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import { handleUserSignUp } from "./controllers/user.controller.js";
+import { handleListStoreReviews } from "./controllers/store.controller.js";
 import storeRouter from "./routes/store.route.js";
 import reviewRouter from "./routes/review.route.js";
 import missionRouter from "./routes/mission.route.js";
@@ -21,6 +22,7 @@ app.get("/", (req, res) => {
 });
 
 app.post("/api/v1/users/signup", handleUserSignUp);
+app.get("/api/v1/stores/:storeId/reviews", handleListStoreReviews);
 
 // API (route 구조로 연결)
 app.use("/api/v1/stores", storeRouter);

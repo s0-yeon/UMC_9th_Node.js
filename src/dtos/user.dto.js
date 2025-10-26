@@ -14,22 +14,14 @@ export const bodyToUser = (body) => {
 };
 
 
-// 📤 DB 결과 → 클라이언트 응답용 변환
 export const responseFromUser = ({ user, preferences }) => {
+  const preferFoods = preferences.map(
+    (preference) => preference.foodCategory.name
+  );
+
   return {
-    userId: user.user_id || user.id,   // DB 컬럼명에 따라 조정
     email: user.email,
     name: user.name,
-    gender: user.gender,
-    birth: user.birth,
-    address: user.address,
-    detailAddress: user.detail_address || user.detailAddress,
-    phoneNumber: user.phone_number || user.phoneNumber,
-    preferences: preferences.map((pref) => ({
-      id: pref.preference_id || pref.id,
-      name: pref.preference_name || pref.name,
-    })),
-    createdAt: user.created_at || user.createdAt || null,
-    updatedAt: user.updated_at || user.updatedAt || null,
+    preferCategory: preferFoods,
   };
 };
