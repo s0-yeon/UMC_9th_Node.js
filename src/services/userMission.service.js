@@ -1,42 +1,43 @@
-import { pool } from "../db.config.js";
 import {
   findMissionById,
   findUserMissionDuplicate,
   addUserMissionInDB,
+  getUserMissionsInProgress,
+  updateUserMissionStatus,
 } from "../repositories/userMission.repository.js";
 
+// ✅ 1. 미션 도전 (user_mission 등록)
 export const challengeMission = async (data) => {
-  const connection = await pool.getConnection();
   try {
-    await connection.beginTransaction();
-
-    // ✅ 1. 미션 존재 여부 확인
-    const mission = await findMissionById(connection, data.mission_id);
+    // 1️⃣ 미션 존재 여부 확인
+    const mission = await findMissionById(data.missionId);
     if (!mission) throw new Error("해당 미션이 존재하지 않습니다.");
 
-    // ✅ 2. 중복 도전 여부 확인
-    const isDuplicate = await findUserMissionDuplicate(
-      connection,
-      data.user_id,
-      data.mission_id
-    );
+    // 2️⃣ 이미 도전 중인지 확인
+    const isDuplicate = await findUserMissionDuplicate(data.userId, data.missionId);
     if (isDuplicate) throw new Error("이미 도전 중인 미션입니다.");
 
-    // ✅ 3. 도전 등록
-    const userMissionId = await addUserMissionInDB(connection, data);
+    // 3️⃣ 새 도전 등록
+    const userMission = await addUserMissionInDB(data);
 
-    // ✅ 4. 새로 등록된 user_mission 조회
-    const [rows] = await connection.query(
-      "SELECT * FROM user_mission WHERE user_mission_id = ?",
-      [userMissionId]
-    );
-
-    await connection.commit();
-    return rows[0];
+    // 4️⃣ 반환
+    return userMission;
   } catch (error) {
-    await connection.rollback();
+    console.error("❌ challengeMission Error:", error);
     throw error;
-  } finally {
-    connection.release();
   }
+};
+
+// ✅ 2. 내가 진행 중인 미션 목록 조회
+export const listUserMissions = async (userId) => {
+  return await getUserMissionsInProgress(userId);
+};
+
+// ✅ 미션 완료 처리
+export const completeUserMission = async (userId, userMissionId) => {
+  // 1️⃣ 진행 중 미션이 맞는지 확인
+  const updatedMission = await updateUserMissionStatus(userId, userMissionId, "완료");
+  if (!updatedMission) throw new Error("해당 미션이 존재하지 않거나 이미 완료되었습니다.");
+
+  return updatedMission;
 };

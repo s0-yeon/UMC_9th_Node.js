@@ -1,6 +1,7 @@
 import { addStoreInDB } from "../repositories/store.repository.js";
 import { pool } from "../db.config.js";
-import { getAllStoreReviews } from "../repositories/review.repository.js";
+import { getAllStoreReviews } from "../repositories/store.repository.js";
+import { responseFromReviews } from "../dtos/store.dto.js";
 
 
 export const addStore = async (storeData) => {
@@ -27,7 +28,7 @@ export const addStore = async (storeData) => {
   }
 };
 
-export const listStoreReviews = async (storeId) => {
-  const reviews = await getAllStoreReviews(storeId);
+export const listStoreReviews = async (storeId, cursor = 0) => {
+  const reviews = await getAllStoreReviews(Number(storeId),Number(cursor));
   return responseFromReviews(reviews);
 };

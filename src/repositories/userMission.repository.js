@@ -1,30 +1,91 @@
+import { prisma } from "../db.config.js"; // ✅ 이거 하나면 충분
+
 // ✅ 미션 존재 여부 확인
-export const findMissionById = async (connection, missionId) => {
-  const [rows] = await connection.query(
-    "SELECT * FROM mission WHERE mission_id = ?",
-    [missionId]
-  );
-  return rows[0];
+export const findMissionById = async (missionId) => {
+  return await prisma.mission.findUnique({
+    where: { missionId: Number(missionId) },
+  });
 };
 
 // ✅ 중복 도전 여부 확인
-export const findUserMissionDuplicate = async (connection, userId, missionId) => {
-  const [rows] = await connection.query(
-    "SELECT * FROM user_mission WHERE user_id = ? AND mission_id = ? AND status = '수행중'",
-    [userId, missionId]
-  );
-  return rows.length > 0;
+export const findUserMissionDuplicate = async (userId, missionId) => {
+  const existing = await prisma.userMission.findFirst({
+    where: {
+      userId: Number(userId),
+      missionId: Number(missionId),
+      status: "수행중",
+    },
+  });
+
+  return existing !== null; // true면 이미 도전 중
 };
 
 // ✅ 미션 도전 등록
-export const addUserMissionInDB = async (connection, data) => {
-  const { user_id, mission_id, store_id, time_limit } = data;
+export const addUserMissionInDB = async (data) => {
+  const { userId, missionId, storeId, timeLimit } = data;
 
-  const [result] = await connection.execute(
-    `INSERT INTO user_mission (user_id, mission_id, store_id, status, accept_at, time_limit, created_at)
-     VALUES (?, ?, ?, '수행중', NOW(), ?, NOW())`,
-    [user_id, mission_id, store_id, time_limit]
-  );
+  const userMission = await prisma.userMission.create({
+    data: {
+      userId: Number(userId),
+      missionId: Number(missionId),
+      storeId: Number(storeId),
+      status: "수행중",
+      acceptAt: new Date(),
+      timeLimit: Number(timeLimit),
+    },
+  });
 
-  return result.insertId;
+  return userMission.userMissionId; // 기존 insertId 역할
+};
+
+// ✅ 내가 진행 중인 미션 목록 조회
+export const getUserMissionsInProgress = async (userId) => {
+  return await prisma.userMission.findMany({
+    where: {
+      userId: Number(userId),
+      status: "수행중",
+    },
+    orderBy: { userMissionId: "asc" },
+    select: {
+      userMissionId: true,
+      userId: true,
+      missionId: true,
+      status: true,
+      acceptAt: true,
+      timeLimit: true,
+      createdAt: true,
+      mission: {
+        select: {
+          missionContent: true,
+          givePoint: true,
+          price: true,
+          store: {
+            select: { name: true, region: true },
+          },
+        },
+      },
+    },
+  });
+};
+
+
+// ✅ 미션 상태 업데이트
+export const updateUserMissionStatus = async (userId, userMissionId, newStatus) => {
+  // 먼저 현재 상태 확인
+  const mission = await prisma.userMission.findFirst({
+    where: {
+      userMissionId: Number(userMissionId),
+      userId: Number(userId),
+    },
+  });
+
+  if (!mission || mission.status === newStatus) return null; // 없거나 이미 완료면 null 반환
+
+  // 상태 업데이트
+  const updated = await prisma.userMission.update({
+    where: { userMissionId: Number(userMissionId) },
+    data: { status: newStatus },
+  });
+
+  return updated;
 };

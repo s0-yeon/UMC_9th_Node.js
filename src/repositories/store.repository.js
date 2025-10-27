@@ -1,31 +1,46 @@
 import { prisma } from "../db.config.js";
 
 
-export const addStoreInDB = async (connection, storeData) => {
+
+export const addStoreInDB = async (storeData) => {
   const { name, address, region } = storeData;
 
-  const [result] = await connection.execute(
-    `INSERT INTO store (name, address, review, total_star, created_at)
-     VALUES (?, ?, 0, 0, NOW())`,
-    [name, address]
-  );
+  const store = await prisma.store.create({
+    data: {
+      name,
+      address,
+      region,
+      // review, total_star 컬럼이 있다면 0으로 초기화
+      review: 0,
+      totalStar: 0,
+    },
+  });
 
-  return result.insertId;
+  return store.storeId; // 기존 result.insertId 역할
 };
 
 
 export const getAllStoreReviews = async (storeId, cursor) => {
-  const reviews = await prisma.userStoreReview.findMany({
+  const reviews = await prisma.review.findMany({
+    where: {
+      storeId: Number(storeId),          //  문자열 숫자로 변환
+      reviewId: { gt: Number(cursor) },  // 커서 숫자로 변환
+    },
+    orderBy: { reviewId: "asc" },
     select: {
-      id: true,
+      reviewId: true,
       content: true,
       storeId: true,
       userId: true,
-      store: true,
-      user: true,
+      star: true,
+      createdAt: true,
+      user: {
+        select: { name: true, email: true },
+      },
+      store: {
+        select: { name: true, region: true },
+      },
     },
-    where: { storeId: storeId, id: { gt: cursor } }, // 커서 페이지네이션
-    orderBy: { id: "asc" },
     take: 5,
   });
 

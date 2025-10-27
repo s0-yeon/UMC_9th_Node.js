@@ -4,4 +4,5 @@ node_modules/
 # dotenv environment variable files
 .env
 .env.*
+.vscode/
 /src/generated/prisma

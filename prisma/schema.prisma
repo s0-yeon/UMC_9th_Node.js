@@ -1,12 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
- // output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -14,38 +7,114 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// User 테이블
 model User {
-  id            Int      @id @default(autoincrement())
-  email         String   @unique(map: "email") @db.VarChar(255)
-  name          String   @db.VarChar(100)
-  gender        String   @db.VarChar(15)
-  birth         DateTime @db.Date
-  address       String   @db.VarChar(255)
-  detailAddress String?  @map("detail_address") @db.VarChar(255)
-  phoneNumber   String   @map("phone_number") @db.VarChar(15)
+  userId         Int      @id @map("user_id") @default(autoincrement())
+  email          String   @unique(map: "email") @db.VarChar(255)
+  name           String   @db.VarChar(100)
+  gender         String   @db.VarChar(15)
+  birth          DateTime @db.Date
+  address        String   @db.VarChar(255)
+  detailAddress  String?  @map("detail_address") @db.VarChar(255)
+  phoneNumber    String   @map("phone_number") @db.VarChar(15)
+  createdAt      DateTime @map("created_at") @default(now())
 
   userFavorCategories UserFavorCategory[]
+  reviews              Review[]
+  userMissions         UserMission[]
 
   @@map("user")
 }
 
+// FoodCategory 테이블
 model FoodCategory {
-  id   Int    @id @default(autoincrement())
-  name String @db.VarChar(100)
+  foodCategoryId Int    @id @map("food_category_id") @default(autoincrement())
+  name           String @db.VarChar(100)
 
   userFavorCategories UserFavorCategory[]
 
   @@map("food_category")
 }
 
+// UserFavorCategory (유저 선호 음식 카테고리)
 model UserFavorCategory {
-  id             Int          @id @default(autoincrement())
-  user           User         @relation(fields: [userId], references: [id])
-  userId         Int          @map("user_id")
-  foodCategory   FoodCategory @relation(fields: [foodCategoryId], references: [id])
-  foodCategoryId Int          @map("food_category_id")
+  userFavorCategoryId Int           @id @map("user_favor_category_id") @default(autoincrement())
+  userId              Int           @map("user_id")
+  foodCategoryId      Int           @map("food_category_id")
+
+  user         User         @relation(fields: [userId], references: [userId])
+  foodCategory FoodCategory @relation(fields: [foodCategoryId], references: [foodCategoryId])
 
   @@index([foodCategoryId], map: "f_category_id")
   @@index([userId], map: "user_id")
   @@map("user_favor_category")
+}
+
+// Store (가게 테이블)
+model Store {
+  storeId     Int       @id @map("store_id") @default(autoincrement())
+  name        String
+  address     String?
+  region      String
+  review      Int       @default(0)
+  totalStar   Int       @map("total_star") @default(5)
+  phoneNumber String?   @map("phone_number")
+  createdAt   DateTime  @map("created_at") @default(now())
+  updatedAt   DateTime  @map("updated_at") @updatedAt
+
+  missions     Mission[]
+  reviews      Review[]
+  userMissions UserMission[]
+
+  @@map("store")
+}
+
+// Mission (미션 테이블)
+model Mission {
+  missionId      Int      @id @map("mission_id") @default(autoincrement())
+  storeId        Int      @map("store_id")
+  region         String
+  missionContent String   @map("mission_content")
+  givePoint      Int      @map("give_point")
+  price          Int
+  createdAt      DateTime @map("created_at") @default(now())
+
+  userMissions UserMission[]
+  store        Store @relation(fields: [storeId], references: [storeId])
+
+  @@map("mission")
+}
+
+// Review (리뷰 테이블)
+model Review {
+  reviewId  Int      @id @map("review_id") @default(autoincrement())
+  userId    Int      @map("user_id")
+  storeId   Int      @map("store_id")
+  title     String
+  content   String
+  star      Int
+  createdAt DateTime @map("created_at") @default(now())
+
+  user  User  @relation(fields: [userId], references: [userId])
+  store Store @relation(fields: [storeId], references: [storeId])
+
+  @@map("review")
+}
+
+// UserMission (유저 미션 테이블)
+model UserMission {
+  userMissionId Int      @id @map("user_mission_id") @default(autoincrement())
+  userId        Int      @map("user_id")
+  missionId     Int      @map("mission_id")
+  storeId       Int      @map("store_id")
+  status        String   @default("수행중")
+  acceptAt      DateTime @map("accept_at") @default(now())
+  timeLimit     Int      @map("time_limit")
+  createdAt     DateTime @map("created_at") @default(now())
+
+  user    User    @relation(fields: [userId], references: [userId])
+  mission Mission @relation(fields: [missionId], references: [missionId])
+  store   Store   @relation(fields: [storeId], references: [storeId])
+
+  @@map("user_mission")
 }

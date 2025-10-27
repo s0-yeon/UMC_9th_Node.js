@@ -28,7 +28,7 @@ app.get("/api/v1/stores/:storeId/reviews", handleListStoreReviews);
 app.use("/api/v1/stores", storeRouter);
 app.use("/api/v1/stores", reviewRouter);
 app.use("/api/v1/stores", missionRouter);
-app.use("/api/v1/missions", userMissionRouter);
+app.use("/api/v1/users", userMissionRouter);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
