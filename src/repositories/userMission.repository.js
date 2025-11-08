@@ -40,12 +40,14 @@ export const addUserMissionInDB = async (data) => {
 
 // ✅ 내가 진행 중인 미션 목록 조회
 export const getUserMissionsInProgress = async (userId) => {
-  return await prisma.userMission.findMany({
+  const missions =  await prisma.userMission.findMany({
     where: {
       userId: Number(userId),
       status: "수행중",
+      ...(cursor ? { userMissionId: { It: Number(cursor) } } : {}),
     },
-    orderBy: { userMissionId: "asc" },
+    orderBy: { userMissionId: "desc" },
+    take: 5,
     select: {
       userMissionId: true,
       userId: true,
@@ -66,6 +68,7 @@ export const getUserMissionsInProgress = async (userId) => {
       },
     },
   });
+  return missions.reverse();
 };
 
 

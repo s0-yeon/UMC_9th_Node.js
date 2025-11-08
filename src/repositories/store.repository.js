@@ -24,9 +24,9 @@ export const getAllStoreReviews = async (storeId, cursor) => {
   const reviews = await prisma.review.findMany({
     where: {
       storeId: Number(storeId),          //  문자열 숫자로 변환
-      reviewId: { gt: Number(cursor) },  // 커서 숫자로 변환
+      ...(cursor ? { reviewId: { lt: Number(cursor) } } : {}),  // 커서 숫자로 변환
     },
-    orderBy: { reviewId: "asc" },
+    orderBy: { reviewId: "desc" },
     select: {
       reviewId: true,
       content: true,
@@ -44,5 +44,5 @@ export const getAllStoreReviews = async (storeId, cursor) => {
     take: 5,
   });
 
-  return reviews;
+  return reviews.reverse(); // 최신 리뷰가 마지막에 오도록 순서 변경
 };

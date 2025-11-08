@@ -20,6 +20,15 @@ export const addMission = async (missionData) => {
 /**
  * ✅ 특정 가게의 미션 목록 조회
  */
-export const listMissionsByStore = async (storeId) => {
-  return await getMissionsByStoreId(Number(storeId));
+export const listMissionsByStore = async (storeId, cursor) => {
+  if (!storeId || isNaN(storeId)) {
+    throw new CustomError("유효하지 않은 가게 ID입니다.", 400);
+  }
+  
+  const store = await findStoreById(storeId);
+  if (!store) {
+    throw new CustomError("해당 가게가 존재하지 않습니다.", 404);
+  }
+  
+  return await getMissionsByStoreId(storeId, cursor);
 };

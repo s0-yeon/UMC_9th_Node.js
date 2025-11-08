@@ -45,19 +45,28 @@ export const handleListUserMissions = async (req, res) => {
 export const handleCompleteUserMission = async (req, res) => {
   try {
     const { userId, userMissionId } = req.params;
+    
+    // 입력 검증
+    if (!userId || isNaN(userId)) {
+      return res.status(400).json({ message: "유효하지 않은 사용자 ID입니다." });
+    }
+    if (!userMissionId || isNaN(userMissionId)) {
+      return res.status(400).json({ message: "유효하지 않은 미션 ID입니다." });
+    }
+    
     const updatedMission = await completeUserMission(
       Number(userId),
       Number(userMissionId)
     );
-
+    
     res.status(StatusCodes.OK).json({
       message: "미션 완료로 상태 변경 성공",
       data: updatedMission,
     });
   } catch (error) {
-    console.error("❌ handleCompleteUserMission Error:", error);
-    res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: error.message || "미션 완료 처리 실패" });
+    console.error("handleCompleteUserMission Error:", error);
+    res.status(StatusCodes.BAD_REQUEST).json({ 
+      message: error.message || "미션 완료 처리 실패" 
+    });
   }
 };

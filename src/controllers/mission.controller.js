@@ -1,5 +1,6 @@
 import { requestToMission, responseFromMission } from "../dtos/mission.dto.js";
-import { addMission } from "../services/mission.service.js";
+import { addMission, listMissionsByStore } from "../services/mission.service.js";
+import { StatusCodes } from "http-status-codes";
 
 export const handleAddMission = async (req, res) => {
   try {
@@ -13,8 +14,7 @@ export const handleAddMission = async (req, res) => {
       data: responseFromMission(newMission),
     });
   } catch (error) {
-    console.error("❌ handleAddMission Error:", error);
-    res.status(400).json({ message: error.message });
+      next(error); // ✅ 에러 미들웨어로 전달
   }
 };
 
@@ -22,16 +22,16 @@ export const handleAddMission = async (req, res) => {
 export const handleListMissionsByStore = async (req, res) => {
   try {
     const { storeId } = req.params;
-    const missions = await listMissionsByStore(Number(storeId));
+    const cursor = req.query.cursor ? parseInt(req.query.cursor) : 0;
+    const missions = await listMissionsByStore(Number(storeId), cursor);
 
     res.status(StatusCodes.OK).json({
       data: missions,
-      count: missions.length,
+      pagination: {
+        cursor: missions.length ? missions[missions.length - 1].missionId : null,
+      }
     });
   } catch (error) {
-    console.error(error);
-    res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "미션 목록 조회 중 오류 발생" });
+      next(error);
   }
 };

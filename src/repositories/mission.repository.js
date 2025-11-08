@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
+import { prisma } from "../db.config.js";
 
 // 가게 존재 여부 확인
 export const findStoreById = async (storeId) => {
@@ -28,10 +28,13 @@ export const addMissionInDB = async (missionData) => {
 };
 
 // ✅ 3️⃣ 특정 가게의 미션 목록 조회
-export const getMissionsByStoreId = async (storeId) => {
-  return await prisma.mission.findMany({
-    where: { storeId },
-    orderBy: { missionId: "asc" },
+export const getMissionsByStoreId = async (storeId,cursor) => {
+  const mission = await prisma.mission.findMany({
+    where: { storeId,
+      ...(cursor ? {missionId: { lt: Number(cursor) } } : {}), 
+    },
+    take: 5,
+    orderBy: { missionId: "desc" },
     select: {
       missionId: true,
       region: true,
@@ -44,4 +47,5 @@ export const getMissionsByStoreId = async (storeId) => {
       },
     },
   });
+  return mission.reverse();
 };

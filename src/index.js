@@ -30,6 +30,9 @@ app.use("/api/v1/stores", reviewRouter);
 app.use("/api/v1/stores", missionRouter);
 app.use("/api/v1/users", userMissionRouter);
 
+
+app.use(errorHandler); // 모든 라우트 뒤에 추가
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });

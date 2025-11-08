@@ -7,13 +7,13 @@ export const requestToStore = (body) => ({
 
 // 응답 DTO: DB 결과 → 클라이언트 반환 형태
 export const responseFromStore = (store) => ({
-  store_id: store.store_id,
+  storeId: store.storeId,
   name: store.name,
   address: store.address,
   region: store.region,
   review: store.review,
-  total_star: store.total_star,
-  created_at: store.created_at,
+  totalStar: store.totalStar,
+  createdAt: store.createdAt,
 });
 
 export const responseFromReviews = (reviews) => {
