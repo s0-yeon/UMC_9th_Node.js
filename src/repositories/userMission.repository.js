@@ -1,4 +1,5 @@
 import { prisma } from "../db.config.js"; // ✅ 이거 하나면 충분
+import {MissionNotFoundError, UserMissionDuplicateError,InvalidMissionStatusError, InternalServerError } from "../errors/customError.js";
 
 // ✅ 미션 존재 여부 확인
 export const findMissionById = async (missionId) => {
@@ -23,6 +24,14 @@ export const findUserMissionDuplicate = async (userId, missionId) => {
 // ✅ 미션 도전 등록
 export const addUserMissionInDB = async (data) => {
   const { userId, missionId, storeId, timeLimit } = data;
+try {
+    if (await findMissionById(missionId) === null) {
+      throw new MissionNotFoundError("해당 미션이 존재하지 않습니다.");
+    }
+
+    else if (await findUserMissionDuplicate(userId, missionId)) {
+      throw new UserMissionDuplicateError("이미 도전 중인 미션입니다.");
+    }
 
   const userMission = await prisma.userMission.create({
     data: {
@@ -36,10 +45,15 @@ export const addUserMissionInDB = async (data) => {
   });
 
   return userMission.userMissionId; // 기존 insertId 역할
+}
+catch (error) {
+  throw InternalServerError("미션 도전 등록중 오류가 발생했습니다."); // 오류를 다시 던져서 호출한 쪽에서 처리할 수 있도록 함
 };
+}
 
 // ✅ 내가 진행 중인 미션 목록 조회
 export const getUserMissionsInProgress = async (userId) => {
+  try {
   const missions =  await prisma.userMission.findMany({
     where: {
       userId: Number(userId),
@@ -69,12 +83,20 @@ export const getUserMissionsInProgress = async (userId) => {
     },
   });
   return missions.reverse();
-};
+} catch (error) {
+  throw InternalServerError("진행 중인 미션 목록 조회중 오류가 발생했습니다."); // 오류를 다시 던져서 호출한 쪽에서 처리할 수 있도록 함
+}};
 
 
 // ✅ 미션 상태 업데이트
 export const updateUserMissionStatus = async (userId, userMissionId, newStatus) => {
   // 먼저 현재 상태 확인
+try {
+      if (await findMissionById(missionId) === null) {
+      throw new MissionNotFoundError("해당 미션이 존재하지 않습니다.");
+    }
+
+
   const mission = await prisma.userMission.findFirst({
     where: {
       userMissionId: Number(userMissionId),
@@ -82,7 +104,12 @@ export const updateUserMissionStatus = async (userId, userMissionId, newStatus) 
     },
   });
 
-  if (!mission || mission.status === newStatus) return null; // 없거나 이미 완료면 null 반환
+  if (!mission) {
+    throw new MissionNotFoundError("해당 미션이 존재하지 않습니다.");
+  }
+  else if( mission.status === newStatus) {
+    throw new InvalidMissionStatusError("이미 완료된 미션입니다.");
+  }
 
   // 상태 업데이트
   const updated = await prisma.userMission.update({
@@ -91,4 +118,7 @@ export const updateUserMissionStatus = async (userId, userMissionId, newStatus) 
   });
 
   return updated;
+} catch (error) {
+  throw InternalServerError("미션 상태 업데이트 중 오류가 발생했습니다."); // 오류를 다시 던져서 호출한 쪽에서 처리할 수 있도록 함
+}
 };

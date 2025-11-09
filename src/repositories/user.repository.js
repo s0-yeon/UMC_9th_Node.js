@@ -1,7 +1,20 @@
 import { prisma } from "../db.config.js";
+import { DuplicateUserEmailError } from "../errors/customError.js";
 
 // User 데이터 삽입
 export const addUser = async (u) => {
+try {
+  const existingUserEmail = await prisma.user.findUnique({
+    where: { email: u.email },
+  });
+  if (existingUserEmail) {
+    throw new DuplicateUserEmailError("이미 존재하는 이메일입니다.", u);
+  }
+
+    if (!data.password) {
+    throw new CustomError("비밀번호가 누락되었습니다. password 필드를 확인하세요.");
+  }
+
   const created = await prisma.user.create({
     data: {
       email: u.email,
@@ -16,6 +29,9 @@ export const addUser = async (u) => {
     select: { userId: true },
   });
   return created.userId;
+} catch (error) {
+  throw internalServerError("사용자 추가 중 오류가 발생했습니다.");
+}
 };
 
 // 사용자 정보 얻기
@@ -36,6 +52,7 @@ export const setPreference = async (userId, foodCategoryId) => {
 
 // 사용자 선호 카테고리 반환
 export const getUserPreferencesByUserId = async (userId) => {
+  try {
   const preferences = await prisma.userFavorCategory.findMany({
     select: { //JOIN
       userFavorCategoryId: true,
@@ -48,4 +65,7 @@ export const getUserPreferencesByUserId = async (userId) => {
   });
 
   return preferences;
+} catch (error) {
+  throw internalServerError("사용자 선호음식 카테고리 조회 중 오류가 발생했습니다.");
+} 
 };

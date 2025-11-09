@@ -8,6 +8,7 @@ import { StatusCodes } from "http-status-codes";
 export const handleAddStore = async (req, res) => {
   try {
     // 요청 본문(JSON) → DTO 변환
+    console.log("🔥 req.body:", req.body); // ✅ body 확인용 로그
     const storeData = requestToStore(req.body);
 
     // 서비스 계층에서 가게 추가

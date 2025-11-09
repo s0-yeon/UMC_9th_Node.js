@@ -1,11 +1,18 @@
 import { prisma } from "../db.config.js";
+import { StoreNotFoundError,InternalServerError} from "../errors/customError.js";
 
+// 가게 존재 여부 확인
+export const findStoreById = async (storeId) => {
+  const store = await prisma.store.findUnique({
+    where: { storeId: Number(storeId) },
+  });
+  return store;
+};
 
-
-export const addStoreInDB = async (storeData) => {
+export const addStoreInDB = async (tx,storeData) => {
   const { name, address, region } = storeData;
 
-  const store = await prisma.store.create({
+  const store = await tx.store.create({
     data: {
       name,
       address,
@@ -21,6 +28,13 @@ export const addStoreInDB = async (storeData) => {
 
 
 export const getAllStoreReviews = async (storeId, cursor) => {
+  try {
+
+    const store = findStoreById(storeId);
+  
+  if (!store) {
+    throw new StoreNotFoundError("해당 가게가 존재하지 않습니다.");
+  }
   const reviews = await prisma.review.findMany({
     where: {
       storeId: Number(storeId),          //  문자열 숫자로 변환
@@ -45,4 +59,7 @@ export const getAllStoreReviews = async (storeId, cursor) => {
   });
 
   return reviews.reverse(); // 최신 리뷰가 마지막에 오도록 순서 변경
+} catch (error) {
+  throw InternalServerError("리뷰 목록 조회중 오류가 발생했습니다."); // 오류를 다시 던져서 호출한 쪽에서 처리할 수 있도록 함
+}
 };

@@ -11,9 +11,6 @@ import {
 export const userSignUp = async (data) => {
   console.log("요청으로 들어온 비밀번호:", data.password);
 
-  if (!data.password) {
-    throw new Error("비밀번호가 누락되었습니다. password 필드를 확인하세요.");
-  }
 
   // ✅ 비밀번호 해싱
   const hashedPassword = await bcrypt.hash(data.password, 10);
@@ -30,9 +27,6 @@ export const userSignUp = async (data) => {
     password: hashedPassword, // ✅ 해시된 비밀번호 저장
   });
 
-  if (joinUserId === null) {
-    throw new DuplicateUserEmailError("이미 존재하는 이메일입니다.", data);
-  }
 
   // ✅ 선호 카테고리 추가
   for (const preference of data.preferences || []) {
