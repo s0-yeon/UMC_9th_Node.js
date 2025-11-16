@@ -25,6 +25,12 @@ export class StoreNotFoundError extends CustomError {
   }
 }
 
+export class UserNotFoundError extends CustomError {
+  constructor(message = "존재하지 않는 유저입니다.") {
+    super(message, StatusCodes.BAD_REQUEST, "USER_NOT_FOUND"); // ✅ 정상 저장됨
+  }
+}
+
 // 400 Bad Request
 export class MissionNotFoundError extends CustomError {
   constructor(message = "존재하지 않는 미션입니다.") {

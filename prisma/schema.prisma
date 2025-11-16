@@ -111,6 +111,7 @@ model UserMission {
   status        String   @default("수행중")
   acceptAt      DateTime @map("accept_at") @default(now())
   timeLimit     Int      @map("time_limit")
+  doneAt        DateTime? @map("done_at")
   createdAt     DateTime @map("created_at") @default(now())
 
   user    User    @relation(fields: [userId], references: [userId])
