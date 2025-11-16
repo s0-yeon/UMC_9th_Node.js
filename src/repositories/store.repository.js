@@ -60,6 +60,6 @@ export const getAllStoreReviews = async (storeId, cursor) => {
 
   return reviews.reverse(); // 최신 리뷰가 마지막에 오도록 순서 변경
 } catch (error) {
-  throw InternalServerError("리뷰 목록 조회중 오류가 발생했습니다."); // 오류를 다시 던져서 호출한 쪽에서 처리할 수 있도록 함
+  throw new InternalServerError("리뷰 목록 조회중 오류가 발생했습니다."); // 오류를 다시 던져서 호출한 쪽에서 처리할 수 있도록 함
 }
 };

@@ -47,7 +47,7 @@ try {
   return userMission.userMissionId; // 기존 insertId 역할
 }
 catch (error) {
-  throw InternalServerError("미션 도전 등록중 오류가 발생했습니다."); // 오류를 다시 던져서 호출한 쪽에서 처리할 수 있도록 함
+  throw new InternalServerError("미션 도전 등록중 오류가 발생했습니다."); // 오류를 다시 던져서 호출한 쪽에서 처리할 수 있도록 함
 };
 }
 
@@ -84,7 +84,7 @@ export const getUserMissionsInProgress = async (userId) => {
   });
   return missions.reverse();
 } catch (error) {
-  throw InternalServerError("진행 중인 미션 목록 조회중 오류가 발생했습니다."); // 오류를 다시 던져서 호출한 쪽에서 처리할 수 있도록 함
+  throw new InternalServerError("진행 중인 미션 목록 조회중 오류가 발생했습니다."); // 오류를 다시 던져서 호출한 쪽에서 처리할 수 있도록 함
 }};
 
 
@@ -119,6 +119,6 @@ try {
 
   return updated;
 } catch (error) {
-  throw InternalServerError("미션 상태 업데이트 중 오류가 발생했습니다."); // 오류를 다시 던져서 호출한 쪽에서 처리할 수 있도록 함
+  throw new InternalServerError("미션 상태 업데이트 중 오류가 발생했습니다."); // 오류를 다시 던져서 호출한 쪽에서 처리할 수 있도록 함
 }
 };

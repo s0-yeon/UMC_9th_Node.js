@@ -1,6 +1,10 @@
-import { PrismaClient } from "@prisma/client";
+
 import { prisma } from "../db.config.js";
-import { StoreNotFoundError,InternalServerError} from "../errors/customError.js";
+import { 
+  StoreNotFoundError,
+  InternalServerError,
+  CustomError,
+} from "../errors/customError.js";
 import { findStoreById } from "./store.repository.js";
 
 
@@ -26,7 +30,7 @@ export const addMissionInDB = async (missionData) => {
     },
   });
 } catch (error) {
-  throw InternalServerError("미션 추가중 오류가 발생했습니다."); // 오류를 다시 던져서 호출한 쪽에서 처리할 수 있도록 함
+  throw new InternalServerError("미션 추가중 오류가 발생했습니다."); // 오류를 다시 던져서 호출한 쪽에서 처리할 수 있도록 함
 }
 
   return mission.mission_id; // 기존 insertId 역할
@@ -36,7 +40,7 @@ export const addMissionInDB = async (missionData) => {
 export const getMissionsByStoreId = async (storeId,cursor) => {
   try {
       if (!storeId || isNaN(storeId)) {
-    throw new CustomError("유효하지 않은 가게 ID입니다.", 400);
+    throw new CustomError("유효하지 않은 가게 ID입니다.", 400,'INVALID_STORE_ID');
   }
       const store = findStoreById(storeId);
   
@@ -65,6 +69,6 @@ export const getMissionsByStoreId = async (storeId,cursor) => {
 
   return mission.reverse();
 } catch (error) {
-  throw InternalServerError("미션 목록 조회중 오류가 발생했습니다."); // 오류를 다시 던져서 호출한 쪽에서 처리할 수 있도록 함
+  throw new InternalServerError("미션 목록 조회중 오류가 발생했습니다."); // 오류를 다시 던져서 호출한 쪽에서 처리할 수 있도록 함
 }
 };
