@@ -55,7 +55,7 @@ export const handleCompleteUserMission = async (req, res, next) => {
       Number(userMissionId)
     );
     
-    res.status(StatusCodes.OK).json({
+    res.status(StatusCodes.OK).success({
       message: "미션 완료로 상태 변경 성공",
       data: updatedMission,
     });
