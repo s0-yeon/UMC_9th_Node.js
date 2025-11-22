@@ -56,7 +56,31 @@ export const handleAddStore = async (req, res, next) => {
       }
     }
   };
+
+    #swagger.responses[400] = {
+      description: "가게 등록 실패",
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              resultType: { type: "string", example: "FAIL" },
+              error: {
+                type: "object",
+                properties: {
+                  errorCode: { type: "string", example: "S001" },
+                  reason: { type: "string", example: "가게 이름은 필수입니다." },
+                  data: { type: "object" }
+                }
+              },
+              success: { type: "object", nullable: true, example: null }
+            }
+          }
+        }
+      }
+    };
   */
+
   try {
     // 요청 본문(JSON) → DTO 변환
     console.log("🔥 req.body:", req.body); // ✅ body 확인용 로그
@@ -77,6 +101,21 @@ export const handleAddStore = async (req, res, next) => {
 export const handleListStoreReviews = async (req, res, next) => {
    /*
     #swagger.summary = '상점 리뷰 목록 조회 API';
+
+      #swagger.parameters['storeId'] = {
+      in: 'path',
+      description: '리뷰를 조회할 가게 ID',
+      required: true,
+      type: 'number'
+    };
+
+    #swagger.parameters['cursor'] = {
+      in: 'query',
+      description: '커서 기반 페이지네이션 값 (마지막 리뷰 ID)',
+      required: false,
+      type: 'number'
+    };
+
     #swagger.responses[200] = {
       description: "상점 리뷰 목록 조회 성공 응답",
       content: {

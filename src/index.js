@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
-import { errorHandler } from "./middleware/errorHandler.js";
+import { errorHandler } from "./middlewares/errorHandler.jss";
 import { handleUserSignUp } from "./controllers/user.controller.js";
 import { handleListStoreReviews } from "./controllers/store.controller.js";
 import storeRouter from "./routes/store.route.js";
@@ -16,7 +16,7 @@ import swaggerUiExpress from "swagger-ui-express";
 import passport from "passport";
 import { googleStrategy, jwtStrategy } from "./auth.config.js";
 import { prisma } from "./db.config.js";
-
+import { isLogin } from "./middleware/auth.js";
 
 dotenv.config();
 
@@ -55,6 +55,7 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
+//const isLogin = passport.authenticate('jwt', { session: false });
 //app.post("/api/v1/users/signup", handleUserSignUp);
 app.get("/api/v1/stores/:storeId/reviews", handleListStoreReviews);
 
@@ -65,7 +66,7 @@ app.use("/api/v1/stores", missionRouter);
 app.use("/api/v1/users", userMissionRouter);
 app.use("/api/v1/users", userRouter);
 
-const isLogin = passport.authenticate('jwt', { session: false });
+
 
 app.get('/mypage', isLogin, (req, res) => {
   res.status(200).success({

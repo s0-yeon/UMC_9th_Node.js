@@ -27,7 +27,7 @@ export const handleUserSignUp = async (req, res, next) => {
         }
       }
     };
-    #swagger.responses[200] = {
+    #swagger.responses[201] = {
       description: "회원 가입 성공 응답",
       content: {
         "application/json": {
@@ -78,5 +78,45 @@ export const handleUserSignUp = async (req, res, next) => {
 
   const user = await userSignUp(bodyToUser(req.body));
   
-  res.status(StatusCodes.OK).success(user);
+  res.status(StatusCodes.CREATED).success(user);
+};
+
+export const updateMyInfo = async (req, res, next) => {
+  /**
+ *  #swagger.tags = ["Users"]
+ *  #swagger.summary = "내 정보 수정"
+ *  #swagger.description = "JWT로 인증한 사용자가 자신의 정보를 수정합니다."
+ */
+
+  try {
+    const userId = req.user.userId; // JWT 인증에서 받아온 값
+
+    const {
+      name,
+      phoneNumber,
+      birth,    // "2000-01-01"
+      gender,
+      address,
+      detailAddress,
+    } = req.body;
+
+    const updatedUser = await prisma.user.update({
+      where: { userId },
+      data: {
+        name: name ?? undefined,
+        phoneNumber: phoneNumber ?? undefined,
+        birth: birth ? new Date(birth) : undefined,
+        gender: gender ?? undefined,
+        address: address ?? undefined,
+        detailAddress: detailAddress ?? undefined,
+      },
+    });
+
+    res.success({
+      message: "내 정보가 성공적으로 수정되었습니다.",
+      user: updatedUser,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
