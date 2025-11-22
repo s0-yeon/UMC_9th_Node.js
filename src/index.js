@@ -13,11 +13,15 @@ import userMissionRouter from "./routes/userMission.route.js";
 import { userRouter } from "./routes/user.route.js";
 import swaggerAutogen from "swagger-autogen";
 import swaggerUiExpress from "swagger-ui-express";
-
+import passport from "passport";
+import { googleStrategy, jwtStrategy } from "./auth.config.js";
+import { prisma } from "./db.config.js";
 
 
 dotenv.config();
 
+passport.use(googleStrategy);
+passport.use(jwtStrategy);
 const app = express();
 const port = process.env.PORT;
 
@@ -61,7 +65,39 @@ app.use("/api/v1/stores", missionRouter);
 app.use("/api/v1/users", userMissionRouter);
 app.use("/api/v1/users", userRouter);
 
+const isLogin = passport.authenticate('jwt', { session: false });
 
+app.get('/mypage', isLogin, (req, res) => {
+  res.status(200).success({
+    message: `인증 성공! ${req.user.name}님의 마이페이지입니다.`,
+    user: req.user,
+  });
+});
+
+app.get("/oauth2/login/google", 
+  passport.authenticate("google", { 
+    session: false 
+  })
+);
+app.get(
+  "/oauth2/callback/google",
+  passport.authenticate("google", {
+	  session: false,
+    failureRedirect: "/login-failed",
+  }),
+  (req, res) => {
+    const tokens = req.user; 
+
+    res.status(200).json({
+      resultType: "SUCCESS",
+      error: null,
+      success: {
+          message: "Google 로그인 성공!",
+          tokens: tokens, // { "accessToken": "...", "refreshToken": "..." }
+      }
+    });
+  }
+);
 
 app.use(
   "/docs",

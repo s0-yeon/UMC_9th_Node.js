@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  //url      = env("DATABASE_URL")
 }
 
 // User 테이블
@@ -17,7 +17,7 @@ model User {
   address        String   @db.VarChar(255)
   detailAddress  String?  @map("detail_address") @db.VarChar(255)
   phoneNumber    String   @map("phone_number") @db.VarChar(15)
-  passwordHash   String   @map("password_hash")   // ✅ 새로 추가 (컬럼명은 취향대로)
+  passwordHash   String?   @map("password_hash")   // ✅ 새로 추가 (컬럼명은 취향대로)
   createdAt      DateTime @map("created_at") @default(now())
 
   userFavorCategories UserFavorCategory[]
